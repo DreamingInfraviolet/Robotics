@@ -9,6 +9,18 @@
                 <color rgba="0.5 0.5 0.7 1.0" />
             </material>
         </visual>
+
+        <collision>
+            <geometry>
+                <box size="0.6 0.3 0.3" />
+            </geometry>
+        </collision>
+
+        <inertia>
+            <mass value="1.0" />
+            <inertia ixx="0.015" iyy="0.0375" izz="0.0375"
+                     ixy="0"     ixz="0"      iyz="0" />
+        </inertia>
     </link>
 
     <link name="front_caster">
@@ -18,6 +30,18 @@
             </geometry>
             <material name="paint" />
         </visual>
+
+        <collision>
+            <geometry>
+                <box size="0.1 0.1 0.3" />
+            </geometry>
+        </collision>
+
+        <inertia>
+            <mass value="0.1" />
+            <inertia ixx="0.00083" iyy="0.00083" izz="0.000167"
+                     ixy="0"     ixz="0"      iyz="0" />
+        </inertia>
     </link>
 
     <joint name="front_caster_joint" type="continuous">
@@ -36,6 +60,18 @@
                 <color rgba="0.1 0.1 0.1 1" />
             </material>
         </visual>
+
+        <collision>
+            <geometry>
+                <cylinder length="0.05" radius="0.035" />
+            </geometry>
+        </collision>
+
+        <inertia>
+            <mass value="0.1" />
+            <inertia ixx="5.1458e-5" iyy="5.1458e-5" izz="6.125e-5"
+                     ixy="0"     ixz="0"      iyz="0" />
+        </inertia>
     </link>
 
     <joint name="front_wheel_joint" type="continuous">
@@ -53,6 +89,12 @@
             </geometry>
             <material name="black" />
         </visual>
+
+        <collision>
+            <geometry>
+                <cylinder length="0.05" radius="0.035" />
+            </geometry>
+        </collision>
     </link>
 
     <joint name="right_wheel_joint" type="continuous">
