@@ -1,0 +1,8 @@
+<launch>
+    <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch"/>
+    <node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
+        <remap from="keys" to="cmd_vel_mux/input/teleop" />
+    </node>
+    <node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" />
+</launch>
+
