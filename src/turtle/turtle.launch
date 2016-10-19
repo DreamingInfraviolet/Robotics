@@ -1,8 +1,15 @@
 <launch>
-    <include file="$(find turtlebot_gazebo)/launch/turtlebot_world.launch"/>
-    <node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
+    <!-- Load the URDF of the robot into the parameter server -->
+    <param name="robot_description" textfile="$(find turtle)/urdf/turtle.urdf" />
+    <!-- Launch gazebo -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+    <!-- Spawn bot -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+          args="-param robot_description -urdf -model turtle" />
+
+    <!-- <node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
         <remap from="keys" to="cmd_vel_mux/input/teleop" />
-    </node>
-    <node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" />
+    </node> -->
+    <!--<node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" /> -->
 </launch>
 
