@@ -7,9 +7,9 @@
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
           args="-param robot_description -urdf -model turtle" />
 
-    <!-- <node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
-        <remap from="keys" to="cmd_vel_mux/input/teleop" />
-    </node> -->
+    <node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
+        <remap from="keys" to="cmd_vel" />
+    </node>
     <!--<node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" /> -->
 </launch>
 
