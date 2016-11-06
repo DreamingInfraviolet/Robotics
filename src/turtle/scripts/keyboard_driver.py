@@ -52,7 +52,6 @@ def main():
                 currentVector[1] = 0
 
         msg = Twist()
-        print(currentVector)
         msg.linear.x = currentVector[0]
         msg.angular.z = currentVector[1]
         keyPublisher.publish(msg)
