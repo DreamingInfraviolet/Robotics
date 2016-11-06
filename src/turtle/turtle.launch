@@ -1,6 +1,12 @@
 <launch>
     <!-- Load the URDF of the robot into the parameter server -->
     <param name="robot_description" textfile="$(find turtle)/urdf/turtle.urdf" />
+    <!-- Add controllers.yaml -->
+    <rosparam file="$(find turtle)/controllers.yaml" command="load" />
+    <!-- Add joint state publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <!-- Spawn our controller -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" args="bot_controller" />
     <!-- Launch gazebo -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch" />
     <!-- Spawn bot -->

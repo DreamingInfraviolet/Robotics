@@ -1,0 +1,4 @@
+bot_controller:
+    type: position_controllers/JointPositionController
+    publish_rate: 50
+    joint: front_caster_joint

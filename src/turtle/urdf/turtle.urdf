@@ -139,8 +139,53 @@
         <origin rpy="-1.5708 0 0" xyz="-0.2825 0.125 -0.15" />
     </joint>
 
+    <transmission name="trans0">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="front_caster_joint">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor0">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans1">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="front_wheel_joint">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor1">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans2">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="left_wheel_joint">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor2">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans3">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="right_wheel_joint">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+        </joint>
+        <actuator name="motor3">
+            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
     <gazebo>
-        <plugin name="differential_drive_controller"
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        </plugin>
+        <!--<plugin name="differential_drive_controller"
                 filename="libgazebo_ros_diff_drive.so">
             <legacyMode>false</legacyMode>
             <leftJoint>left_wheel_joint</leftJoint>
@@ -149,5 +194,6 @@
             <wheelSeparation>0.25</wheelSeparation>
             <wheelDiameter>0.07<wheelDiameter>
             <publishWheelJointState>true</publishWheelJointState>
+            </plugin>-->
     </gazebo>
 </robot>
