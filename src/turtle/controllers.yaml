@@ -1,4 +1,19 @@
-bot_controller:
+front_caster_controller:
     type: position_controllers/JointPositionController
     publish_rate: 50
     joint: front_caster_joint
+
+left_wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    publish_rate: 50
+    joint: left_wheel_joint
+
+right_wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    publish_rate: 50
+    joint: right_wheel_joint
+
+front_wheel_controller:
+    type: velocity_controllers/JointVelocityController
+    publish_rate: 50
+    joint: front_wheel_joint

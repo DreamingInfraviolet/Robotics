@@ -6,7 +6,7 @@
     <!-- Add joint state publisher -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <!-- Spawn our controller -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" args="bot_controller" />
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" args="front_caster_controller left_wheel_controller right_wheel_controller front_wheel_controller" />
     <!-- Launch gazebo -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch" />
     <!-- Spawn bot -->

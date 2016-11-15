@@ -153,10 +153,10 @@
     <transmission name="trans1">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="front_wheel_joint">
-            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
         </joint>
         <actuator name="motor1">
-            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
     </transmission>
@@ -164,10 +164,10 @@
     <transmission name="trans2">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="left_wheel_joint">
-            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
         </joint>
         <actuator name="motor2">
-            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
     </transmission>
@@ -175,10 +175,10 @@
     <transmission name="trans3">
         <type>transmission_interface/SimpleTransmission</type>
         <joint name="right_wheel_joint">
-            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
         </joint>
         <actuator name="motor3">
-            <hardwareInterface>PositionJointInterface</hardwareInterface>
+            <hardwareInterface>VelocityJointInterface</hardwareInterface>
             <mechanicalReduction>1</mechanicalReduction>
         </actuator>
     </transmission>
