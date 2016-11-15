@@ -9,7 +9,10 @@
     <!-- Spawn our controller -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" args="front_caster_controller left_wheel_controller right_wheel_controller front_wheel_controller" />
     <!-- Launch gazebo -->
-    <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <!-- Specify world to use -->
+        <arg name="world_name" value="$(find gazebo_plugins)/worlds/empty.world"/>
+    </include>
     <!-- Spawn bot -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
           args="-param robot_description -urdf -model turtle" />
