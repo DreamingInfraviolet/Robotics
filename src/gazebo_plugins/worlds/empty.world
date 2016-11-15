@@ -12,6 +12,6 @@
       <name>gas_station</name>
       <pose>-2.0 7.0 0 0 0 0</pose>
     </include>
-    <!--<plugin name="hello_world" filename="libhello_world.so"/>-->
+    <plugin name="distance_fitness_function" filename="libgazebo_plugin_distance_fitness_function.so"/>
   </world>
 </sdf>
