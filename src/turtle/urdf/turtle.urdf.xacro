@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+<robot name="turtle" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Define useful macros :) -->
+
+    <xacro:macro name="xlink" params="name mass ixx:=0 iyy:=0 izz:=0 ixy:=0 ixz:=0 iyz:=0 *geometry">
+        <link name="${name}">
+            <visual>
+                <geometry>
+                    <xacro:insert_block name="geometry" />
+                </geometry>
+                <material name="paint">
+                    <color rgba="0.5 0.5 0.7 1.0" />
+                </material>
+            </visual>
+            <collision>
+                <geometry>
+                    <xacro:insert_block name="geometry" />
+                </geometry>
+            </collision>
+
+            <inertial>
+                <mass value="${mass}" />
+                <inertia ixx="${ixx}" iyy="${iyy}" izz="${izz}"
+                        ixy="${ixy}"     ixz="${ixz}"      iyz="${iyz}" />
+            </inertial>
+        </link>
+    </xacro:macro>
+
+    <xacro:macro name="xtransmission" params="name motor_name hardware_interface joint">
+        <transmission name="${name}">
+            <type>transmission_interface/SimpleTransmission</type>
+            <joint name="${joint}">
+                <hardwareInterface>${hardware_interface}</hardwareInterface>
+            </joint>
+            <actuator name="${motor_name}">
+                <hardwareInterface>${hardware_interface}</hardwareInterface>
+                <mechanicalReduction>1</mechanicalReduction>
+            </actuator>
+        </transmission>
+    </xacro:macro>
+
+    <!-- Links -->
+
+    <xacro:xlink name="base_link" mass="1.0" ixx="0.015" iyy="0.0375" izz="0.0375">
+        <box size="0.6 0.3 0.3" />
+    </xacro:xlink>
+    
+    <xacro:xlink name="front_caster" mass="0.1" ixx="0.00083" iyy="0.00083" izz="0.000167">
+        <box size="0.1 0.1 0.3" />
+    </xacro:xlink>
+
+    <xacro:xlink name="front_wheel" mass="0.1" ixx="5.1458e-5" iyy="5.1458e-5" izz="6.125e-5">
+        <cylinder length="0.05" radius="0.035" />
+    </xacro:xlink>
+
+    <xacro:xlink name="right_wheel" mass="0.1" ixx="5.1458e-5" iyy="5.1458e-5" izz="6.125e-5">
+        <cylinder length="0.05" radius="0.035" />
+    </xacro:xlink>
+
+    <xacro:xlink name="left_wheel" mass="0.1" ixx="5.1458e-5" iyy="5.1458e-5" izz="6.125e-5">
+        <cylinder length="0.05" radius="0.035" />
+    </xacro:xlink>
+
+    <!-- Joints -->
+
+    <joint name="right_wheel_joint" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="base_link" />
+        <child link="right_wheel" />
+        <origin rpy="-1.5708 0 0" xyz="-0.2825 -0.125 -0.15" />
+    </joint>
+
+    <joint name="front_caster_joint" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="base_link" />
+        <child link="front_caster" />
+        <origin rpy="0 0 0" xyz="0.3 0 0" />
+    </joint>
+
+    <joint name="front_wheel_joint" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="front_caster" />
+        <child link="front_wheel" />
+        <origin rpy="-1.5708 0 0" xyz="0.05 0 -0.15" />
+    </joint>
+
+    <joint name="left_wheel_joint" type="continuous">
+        <axis xyz="0 0 1" />
+        <parent link="base_link" />
+        <child link="left_wheel" />
+        <origin rpy="-1.5708 0 0" xyz="-0.2825 0.125 -0.15" />
+    </joint>
+
+    <!-- Transmissions -->
+    <xacro:xtransmission name="trans0" motor_name="motor0" hardware_interface="PositionJointInterface" joint="front_caster_joint" />
+    <xacro:xtransmission name="trans1" motor_name="motor1" hardware_interface="VelocityJointInterface" joint="front_wheel_joint" />
+    <xacro:xtransmission name="trans2" motor_name="motor2" hardware_interface="VelocityJointInterface" joint="left_wheel_joint" />
+    <xacro:xtransmission name="trans3" motor_name="motor3" hardware_interface="VelocityJointInterface" joint="right_wheel_joint" />
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+        </plugin>
+    </gazebo>
+</robot>

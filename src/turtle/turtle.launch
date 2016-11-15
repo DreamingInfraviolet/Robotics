@@ -1,6 +1,7 @@
 <launch>
     <!-- Load the URDF of the robot into the parameter server -->
-    <param name="robot_description" textfile="$(find turtle)/urdf/turtle.urdf" />
+    <param name="robot_description"
+      command="$(find xacro)/xacro --inorder '$(find turtle)/urdf/turtle.urdf.xacro'" />
     <!-- Add controllers.yaml -->
     <rosparam file="$(find turtle)/controllers.yaml" command="load" />
     <!-- Add joint state publisher -->
