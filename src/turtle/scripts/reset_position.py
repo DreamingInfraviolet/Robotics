@@ -41,5 +41,5 @@ if not getInitialState():
 
 resetSub     = rospy.Subscriber("reset_position", Bool, resetPositionCallback)
 positionPub  = rospy.Publisher("/gazebo/set_model_state", ModelState)
-rospy.init_node('fitness_evaluator')
+rospy.init_node('reset_position')
 rospy.spin()
