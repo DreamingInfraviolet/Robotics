@@ -21,6 +21,7 @@
     </node>
     <!-- Spawn fitness evaluation node -->
     <node name="fitness_evaluator" pkg="turtle" type="fitness_evaluator.py" output="screen" />
+    <node name="reset_position" pkg="turtle" type="reset_position.py" output="screen" />
     <!--<node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" /> -->
 </launch>
 
