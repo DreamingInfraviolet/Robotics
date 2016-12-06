@@ -5,7 +5,7 @@ import tf
 import math
 import numpy
 from gazebo_msgs.msg import ModelStates
-from std_msgs.msg import Float32
+from std_msgs.msg import Float64
 from tf.transformations import quaternion_from_euler
 
 def qv_mult(q1, v1):
@@ -41,7 +41,7 @@ def positionUpdateCallback(msg):
         compassPub.publish(getCompassValue(robotVector, northVector))
         
 positionSub = rospy.Subscriber("/gazebo/model_states", ModelStates, positionUpdateCallback)
-compassPub  = rospy.Publisher("compass", Float32, positionUpdateCallback)
+compassPub  = rospy.Publisher("compass", Float64, positionUpdateCallback)
 rospy.init_node('fitness_evaluator')
 
 rospy.spin()
