@@ -16,9 +16,9 @@
     <!-- Spawn bot -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
           args="-param robot_description -urdf -model turtle" />
-    <node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
+    <!--<node name="keyboard_driver" pkg="turtle" type="keyboard_driver.py" output="screen">
         <remap from="keys" to="cmd_vel" />
-    </node>
+    </node>-->
     <!-- Spawn fitness evaluation node -->
     <node name="fitness_evaluator" pkg="turtle" type="fitness_evaluator.py" output="screen" />
     <node name="reset_position" pkg="turtle" type="reset_position.py" output="screen" />
