@@ -1,4 +1,6 @@
 <launch>
+    <!-- When we sleep using ros, we want to sleep in simulation ms -->
+    <param name="use_sim_time" type="bool" value="true" />
     <!-- Load the URDF of the robot into the parameter server -->
     <param name="robot_description"
       command="$(find xacro)/xacro --inorder '$(find turtle)/urdf/turtle.urdf.xacro'" />
@@ -23,6 +25,7 @@
     <node name="fitness_evaluator" pkg="turtle" type="fitness_evaluator.py" output="screen" />
     <node name="reset_position" pkg="turtle" type="reset_position.py" output="screen" />
     <node name="compass" pkg="turtle" type="compass.py" output="screen" />
+    <node name="ml" pkg="turtle" type="qlearn.py" output="screen" />
     <!--<node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" /> -->
 </launch>
 

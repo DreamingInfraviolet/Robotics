@@ -9,7 +9,10 @@ from keras.layers.core import Dense
 from keras.optimizers import sgd
 import tensorflow
 import ml_controller
+import os
+import rospy
 
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 print("Started learning system")
 
@@ -29,6 +32,7 @@ class RosSimulation(object):
         self.runForMs = 10000
         self.state = np.array([0, 0, 0])
         self.reset()
+        self.rate = rospy.Rate(1)
 
     def _update_state(self, action):
         """
@@ -37,16 +41,16 @@ class RosSimulation(object):
         """
 
         self.controller.performAction(action)
-        self.state = np.array([self.controller.getCompass(), self.controller.desiredWheelOrientation])
+        self.state = np.array(self.controller.fetchInputs())
 
     def _get_reward(self):
         ''' Returns the reward in the range [-1, 0, 1] '''
-        newFitness = self.controller.getFitnessFromNode()
+        newFitness = self.controller.fetchFitness()
 
-        if newFitness > self.bestScore * 1.001:
+        if newFitness > self.bestScore * 1.01:
             reward = 1
             self.bestScore = newFitness
-        elif newFitness < self.initialScore * 0.999:
+        elif newFitness < self.initialScore * 0.99:
             reward = -1
         else:
             reward = 0
@@ -62,22 +66,19 @@ class RosSimulation(object):
         return self.state.reshape((1, -1))
 
     def act(self, action):
-        # self.rate.sleep()
+        self.rate.sleep()
         self._update_state(action)
         reward = self._get_reward()
         game_over = self._is_over()
         return self.observe(), reward, game_over
 
     def reset(self):
-        self.desiredWheelOrientation = 0
-        #self.rate = rospy.Rate(10)
-        self.state = np.array([0, self.desiredWheelOrientation])
-        
         self.controller.reset()
+        self.state = np.array(self.controller.fetchInputs())
         
         # Wait a bit for model to reset properly
         time.sleep(0.5)
-        self.initialScore = self.controller.getFitnessFromNode()
+        self.initialScore = self.controller.fetchFitness()
         self.bestScore = self.initialScore
 
         self.startTime = getCurrentTimeMs()
@@ -94,6 +95,7 @@ class ExperienceReplay(object):
         if len(self.memory) > self.max_memory:
             del self.memory[0]
 
+    # Bottleneck in predict()
     def get_batch(self, model, batch_size=10):
         len_memory = len(self.memory)
         num_actions = model.output_shape[-1]
@@ -121,7 +123,7 @@ class ExperienceReplay(object):
 if __name__ == "__main__":
     # parameters
     epsilon = .1  # exploration
-    epoch = 1000
+    epoch = 100
     max_memory = 500
     hidden_size = 50
     batch_size = 50
@@ -133,7 +135,7 @@ if __name__ == "__main__":
     num_actions = controller.getActionCount()
 
     model = Sequential()
-    model.add(Dense(hidden_size, input_shape=(len(env.state),), activation='relu'))
+    model.add(Dense(hidden_size, input_shape=(controller.getInputCount(),), activation='relu'))
     model.add(Dense(hidden_size, activation='relu'))
     model.add(Dense(num_actions))
     model.compile(sgd(lr=.2), "mse")
@@ -145,7 +147,9 @@ if __name__ == "__main__":
     exp_replay = ExperienceReplay(max_memory=max_memory)
 
     # Train
+
     for e in range(epoch):
+        startTime = getCurrentTimeMs()
         win_cnt = 0
         loss = 0.
         env.reset()
@@ -174,7 +178,8 @@ if __name__ == "__main__":
             inputs, targets = exp_replay.get_batch(model, batch_size=batch_size)
 
             loss += model.train_on_batch(inputs, targets)
-        print("Epoch {:03d}/999 | Loss {:.4f} | Win count {}".format(e, loss, win_cnt))
+            elapsedTime = getCurrentTimeMs() - startTime
+        print("Epoch {:03d}/999 | Loss {:.4f} | Win count {} | took {:.4f} ms".format(e, loss, win_cnt, elapsedTime))
 
     # Save trained model weights and architecture, this will be used by the visualization code
     model.save_weights("model.h5", overwrite=True)

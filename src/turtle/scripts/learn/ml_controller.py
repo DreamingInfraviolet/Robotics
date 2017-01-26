@@ -3,6 +3,22 @@ import rospy
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
 
+class RosInput(object):
+    def __init__(self, topic, msgtype):
+        self.sub = rospy.Subscriber(topic, msgtype, self._update)
+        self.topic = topic
+        self.msgtype = msgtype
+        self.value = msgtype()
+
+    def _update(self, msg):
+        '''Callback to update value'''
+        self.value = msg.data
+
+    def fetchValue(self):
+        '''Wait for a compass message, and return its value'''
+        rospy.wait_for_message(self.topic, self.msgtype)
+        return self.value
+
 class MLController(object):
     def __init__(self):
         pass
@@ -16,37 +32,48 @@ class MLController(object):
     def performAction(self, n):
         pass
 
-class TurtlebotMLController(MLController):
-    def __init__(self, fitness_node="fitness_evaluator", compass_node="compass",
-                 leftWheelCmdNode="/left_wheel_controller/command",
-                 rightWheelCmdNode="/right_wheel_controller/command",
-                 frontWheelCmdNode="/front_caster_controller/command",
-                 frontWheelCasterCmdNode="/front_caster_controller/command",
-                 resetNode="/reset_position"):
-        super(TurtlebotMLController, self)
-        self.turnDelta = math.pi / 5
-        self.movementVelocity = 5.0
-        self.desiredWheelOrientation = 0
+    def getInputCount(self):
+        pass
 
-        self.fitnessSub = rospy.Subscriber(fitness_node, Float64, self._updateFitness)
-        self.compassSub = rospy.Subscriber(compass_node, Float64, self._updateCompass)
-        self.lwPub      = rospy.Publisher(leftWheelCmdNode, Float64, queue_size=10)
-        self.rwPub      = rospy.Publisher(rightWheelCmdNode, Float64, queue_size=10)
-        self.fwPub      = rospy.Publisher(frontWheelCmdNode, Float64, queue_size=10)
-        self.turnPub    = rospy.Publisher(frontWheelCasterCmdNode, Float64, queue_size=10)
-        self.resetPub   = rospy.Publisher(resetNode, Bool, queue_size=10)
+    def fetchInputs(self):
+        pass
+
+class TurtlebotMLController(MLController):
+
+    class ResettableVariables(object):
+        def __init__(self):
+            self.turnDelta = math.pi / 5
+            self.movementVelocity = 5.0
+            self.currentWheelOrientation = 0
+
+    def __init__(self):
+        super(TurtlebotMLController, self)
+
+        self.vars = self.ResettableVariables()
+
+        self.lwPub      = rospy.Publisher("/left_wheel_controller/command", Float64, queue_size=10)
+        self.rwPub      = rospy.Publisher("/right_wheel_controller/command", Float64, queue_size=10)
+        self.fwPub      = rospy.Publisher("/front_wheel_controller/command", Float64, queue_size=10)
+        self.turnPub    = rospy.Publisher("/front_caster_controller/command", Float64, queue_size=10)
+        self.resetPub   = rospy.Publisher("/reset_position", Bool, queue_size=10)
 
         rospy.init_node("ml_controller")
 
+        self.fitnessInput = RosInput("fitness_evaluator", Float64)
+
+        self.inputs = [
+            RosInput("compass", Float64),
+        ]
+
         self.actions = [
             # Move forward
-            lambda instance: instance._move(instance.movementVelocity),
+            lambda instance: instance._move(instance.vars.movementVelocity),
             # Move backward
-            lambda instance: instance._move(-instance.movementVelocity),
+            lambda instance: instance._move(-instance.vars.movementVelocity),
             # Turn right
-            lambda instance: instance._turn(instance.turnDelta),
+            lambda instance: instance._turn(instance.vars.turnDelta),
             # Turn left
-            lambda instance: instance._turn(-instance.turnDelta),
+            lambda instance: instance._turn(-instance.vars.turnDelta),
         ]
 
     def getActionCount(self):
@@ -55,25 +82,20 @@ class TurtlebotMLController(MLController):
     def performAction(self, n):
         self.actions[n](self)
 
-    def getFitnessFromNode(self):
-        '''Get the robot's fitness and return its value'''
-        rospy.wait_for_message("fitness_evaluator", Float64)
-        return self.fitness
+    def getInputCount(self):
+        return len(self.inputs)
 
-    def getCompass(self):
-        '''Wait for a compass message, and return its value'''
-        rospy.wait_for_message("compass", Float64)
-        return self.compass
+    def fetchInputs(self):
+        return [x.fetchValue() for x in self.inputs]
+
+    def fetchFitness(self):
+        return self.fitnessInput.fetchValue()
 
     def reset(self):
+        self.vars = self.ResettableVariables()
         self._move(0)
         self._turn(0)
         self._resetModel()
-
-
-    def _updateCompass(self, msg):
-        '''Callback to update compass'''
-        self.compass = msg.data
 
     def _resetModel(self):
         '''Reset the robot's position and state'''
@@ -83,8 +105,8 @@ class TurtlebotMLController(MLController):
     def _turn(self, angle):
         '''Set the robot's caster wheel angle'''
         print("Turning by " + str(angle))
-        self.desiredWheelOrientation = self.desiredWheelOrientation + angle
-        self.turnPub.publish(self.desiredWheelOrientation)
+        self.vars.currentWheelOrientation = self.vars.currentWheelOrientation + angle
+        self.turnPub.publish(self.vars.currentWheelOrientation)
 
     def _move(self, amount):
         ''' Set the robot's forward motion by @amount'''
