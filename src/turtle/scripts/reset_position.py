@@ -12,7 +12,7 @@ initialState = None
 
 def resetPositionCallback(msg):
     if msg and initialState:
-        print("Resetting model state")
+        #print("Resetting model state")
         positionPub.publish(initialState)
 
 def getInitialState():
