@@ -32,6 +32,7 @@ class LaserInput(RosInput):
 
     def _update(self, msg):
         self.values = list(msg.ranges)
+        self.values[self.values==float("Inf")] = 1000
 
 class MLController(object):
     def __init__(self):
