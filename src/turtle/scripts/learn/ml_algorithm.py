@@ -64,7 +64,7 @@ class ToyQlearningAlgorithm(MLAlgorithm):
         self.maxMemory  = maxMemory
         self.hiddenSize = hiddenSize
         self.batchSize  = batchSize
-        
+
         self.epochData = None
         self.learningData = None
 

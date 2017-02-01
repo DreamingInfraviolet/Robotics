@@ -4,6 +4,7 @@ import rospy
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
 from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Vector3
 
 class RosInput(object):
     def __init__(self, topic, msgtype, timeout=None):
@@ -28,11 +29,16 @@ class RosInput(object):
 class LaserInput(RosInput):
     def __init__(self, topic, timeout=None):
         super(LaserInput, self).__init__(topic, LaserScan, timeout)
-        self.values=[]
 
     def _update(self, msg):
-        self.values = list(msg.ranges)
-        self.values[self.values==float("Inf")] = 1000
+        self.values = [(1000 if x == float("Inf") else x) for x in list(msg.ranges)]
+
+class VectorInput(RosInput):
+    def __init__(self, topic, timeout=None):
+        super(VectorInput, self).__init__(topic, Vector3, timeout)
+
+    def _update(self, msg):
+        self.values = [msg.x, msg.y, msg.z]
 
 class MLController(object):
     def __init__(self):
@@ -43,7 +49,8 @@ class MLController(object):
         self.inputCount = -1
 
     def _finaliseInputSetup(self):
-        self.inputCount = len(self.fetchInputs())
+        inputs = self.fetchInputs()
+        self.inputCount = len(inputs)
 
     def _updateFitness(self, msg):
         self.fitness = msg.data
@@ -91,7 +98,8 @@ class TurtlebotMLController(MLController):
         self.inputs = [
             RosInput("compass", Float64),
             RosInput("/front_caster_controller/command", Float64, 0.05),
-            LaserInput("/laser_scan")
+            LaserInput("/laser_scan"),
+            VectorInput("/gps"),
         ]
 
         self._finaliseInputSetup()
