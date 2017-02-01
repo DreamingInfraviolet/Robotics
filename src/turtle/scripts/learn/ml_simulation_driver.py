@@ -48,6 +48,8 @@ class MLSimulationDriver(object):
     def learn(self):
         self.algorithm.startLearning(self.controller.getInputCount(), self.controller.getActionCount())
 
+        totalLearningReward = 0
+
         for iEpoch in range(self.epochs):
             totalEpochReward = 0
             startTime = int(round(time.time() * 1000))
@@ -66,6 +68,8 @@ class MLSimulationDriver(object):
                 self.controller.performAction(decision)
 
                 # Give the decision some time to have effect
+                # NOTE: Bottleneck. A lot of time is spent sleeping and not doing anything
+                # Might be impossible to solve, and this is essentially waiting for the simulation
                 decisionRate.sleep()
 
                 # Get reward
@@ -81,21 +85,15 @@ class MLSimulationDriver(object):
             self.algorithm.endEpoch()
             # \\\
 
+            totalLearningReward = totalLearningReward + totalEpochReward
+
             elapsedTime = int(round(time.time() * 1000)) - startTime
             print("epoch " + str(iEpoch) + "/" + str(self.epochs) + " | "
                  +"avg. reward: " + str(totalEpochReward) + " (" + str(self.decisionsPerEpoch) + " max) | " + str(elapsedTime) + "ms")
+
+        return float(totalLearningReward) / (self.epochs * self.decisionsPerEpoch)
 
     def fetchReward(self):
         fitness = self.controller.fetchFitness()
         self.rewardAlgorithm.updateFitness(fitness)
         return self.rewardAlgorithm.getRewardValue()
-
-    def reset(self):
-        self.controller.reset()
-        
-        # Wait a bit for model to reset properly
-        time.sleep(0.5)
-        self.initialScore = self.controller.fetchFitness()
-        self.bestScore = self.initialScore
-
-        self.startTime = getCurrentTimeMs()

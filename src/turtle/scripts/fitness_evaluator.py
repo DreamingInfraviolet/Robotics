@@ -12,7 +12,7 @@ def positionUpdateCallback(msg):
     if "turtle" in msg.name:
         pos = msg.pose[msg.name.index("turtle")].position
         distance = ((pos.x-targetPosition[0])**2 + (pos.y-targetPosition[1])**2 + (pos.z-targetPosition[2])**2) ** 0.5
-        fitnessPub.publish(1 / distance)
+        fitnessPub.publish(1.0 / distance)
         # if gI % 10000 == 0:
         #     print("Distance: " + str(distance))
         gI = gI + 1

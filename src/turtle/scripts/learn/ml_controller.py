@@ -1,6 +1,7 @@
 import math
 import time
 import rospy
+import sys
 from std_msgs.msg import Float64
 from std_msgs.msg import Bool
 from sensor_msgs.msg import LaserScan
@@ -78,7 +79,7 @@ class TurtlebotMLController(MLController):
 
     class ResettableVariables(object):
         def __init__(self):
-            self.turnDelta = math.pi / 5
+            self.turnDelta = math.pi / 5.0
             self.movementVelocity = 5.0
             self.currentWheelOrientation = 0
 
@@ -95,11 +96,13 @@ class TurtlebotMLController(MLController):
         self.turnPub    = rospy.Publisher("/front_caster_controller/command", Float64, queue_size=10)
         self.resetPub   = rospy.Publisher("/reset_position", Bool, queue_size=10)
 
+        self.gpsInput = VectorInput("/gps")
+
         self.inputs = [
             RosInput("compass", Float64),
             RosInput("/front_caster_controller/command", Float64, 0.05),
             LaserInput("/laser_scan"),
-            VectorInput("/gps"),
+            self.gpsInput,
         ]
 
         self._finaliseInputSetup()
@@ -125,7 +128,30 @@ class TurtlebotMLController(MLController):
         '''Reset the robot's position and state'''
         #print("Resetting")
         self.resetPub.publish(True)
-        time.sleep(0.05)
+        
+        # Sleeping is slow
+        # Instead of sleeping, check until position is reset
+        # We first check if it's already at 0,0
+        e = 0.1 
+        if abs(self.gpsInput.values[0]) < e and abs(self.gpsInput.values[0]) < e:
+            pass
+        else:
+            sys.stdout.write("Waiting until robot is reset")
+            countdown = 100
+            while countdown > 0:
+                sys.stdout.write(".")
+                sys.stdout.flush()
+                newPos = self.gpsInput.fetchValues()
+                if abs(newPos[0]) < e and abs(newPos[0]) < e:
+                    sys.stdout.write(" Done!\n")
+                    sys.stdout.flush()
+                    break
+                else:
+                    # Rarely reached
+                    time.sleep(0.01)
+                    countdown = countdown - 1
+            if countdown == 0:
+                raise EnvironmentError("Robot reset confirmation not received")
 
     def _turn(self, angle):
         '''Set the robot's caster wheel angle'''

@@ -29,7 +29,7 @@
     <node name="gps" pkg="turtle" type="gps.py" output="screen" />
     <node name="reset_position" pkg="turtle" type="reset_position.py" output="screen" />
     <node name="compass" pkg="turtle" type="compass.py" output="screen" />
-    <node name="ml" pkg="turtle" type="qlearn.py" output="screen" />
+    <!--<node name="ml" pkg="turtle" type="qlearn.py" output="screen" />-->
     <!--<node name="modelvisualisation" pkg="rviz" type="rviz" output="screen" /> -->
 </launch>
 
