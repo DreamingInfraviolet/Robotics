@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<sdf version="1.4">
+  <world name="obstacles">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <model name="rock">
+      <pose>3.5 0 0 0 0 0</pose>
+      <static>true</static>
+      <link name="body">
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>model://rock/mesh/Rock1.dae</uri>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>model://rock/mesh/Rock1.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://rock/materials/scripts</uri>
+              <uri>model://rock/materials/textures</uri>
+              <name>Rock/Diffuse</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <physics type="ode">
+      <real_time_update_rate>0.000000</real_time_update_rate>
+      <max_step_size>0.001000</max_step_size>
+    </physics>
+  </world>
+</sdf>

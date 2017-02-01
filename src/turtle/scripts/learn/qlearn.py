@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 
 import json
-import numpy as np
-import time
 import tensorflow
 import os
-import rospy
 
 import ml_simulation_driver
 import ml_controller
 import ml_algorithm
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+# os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
 print("Started learning system")
 
@@ -24,9 +21,9 @@ sess = tensorflow.Session(config=config)
 if __name__ == "__main__":
 
     controller = ml_controller.TurtlebotMLController()
-    algorithm  = ml_algorithm.ToyQlearningAlgorithm(explorationEpsilon = 0.1, maxMemory = 1000, hiddenSize = 50, batchSize = 50)
+    algorithm  = ml_algorithm.ToyQlearningAlgorithm(explorationEpsilon = 0.1, maxMemory = 1000, hiddenSize = 200, batchSize = 50)
     rewardAlg  = ml_simulation_driver.MLProgressRewardAlgorithm()
-    driver     = ml_simulation_driver.MLSimulationDriver(controller, algorithm, rewardAlg, epochs=100, decisionsPerEpoch=20, decisionSimTimeRateHz=1)
+    driver     = ml_simulation_driver.MLSimulationDriver(controller, algorithm, rewardAlg, epochs=1000, decisionsPerEpoch=50, decisionSimTimeRateHz=1)
 
     driver.learn()
 

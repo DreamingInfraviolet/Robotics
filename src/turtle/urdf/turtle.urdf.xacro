@@ -137,7 +137,7 @@
         <sensor type="gpu_ray" name="laser">
             <pose> 0 0 0 0 0 0</pose>
             <visualize>false</visualize>
-            <update_rate>10</update_rate>
+            <update_rate>2</update_rate>
             <ray>
                 <scan>
                     <horizontal>

@@ -13,10 +13,10 @@
     <!-- Launch gazebo -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <!-- Specify world to use -->
-        <arg name="world_name" value="$(find gazebo_plugins)/worlds/empty.world"/>
+        <arg name="world_name" value="$(find turtle)/worlds/obstacle_course.world"/>
         <!-- Running headless gives a small performance improvement. Feel free to disable this to see robot in action -->
-        <arg name="headless" value="true"/>
-        <arg name="gui" value="false"/>
+        <!--<arg name="headless" value="true"/>
+        <arg name="gui" value="false"/>-->
     </include>
     <!-- Spawn bot -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
