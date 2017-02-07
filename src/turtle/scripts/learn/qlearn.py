@@ -28,6 +28,8 @@ def learn(epochs, decisionsPerEpoch, decisionSimTimeRateHz, maxMemory, controlle
         explorationEpsilon = x[0]
         hiddenSize         = int(x[1])
         batchSize          = int(x[2])
+        epsilonDecay       = x[3]
+        temporalDiscount   = x[4]
 
         print("Running with: " + str(x))
 
@@ -36,9 +38,11 @@ def learn(epochs, decisionsPerEpoch, decisionSimTimeRateHz, maxMemory, controlle
         # Populate algorithms
 
         algorithm  = ml_algorithm.RealQlearningAlgorithm(explorationEpsilon=explorationEpsilon,
+                                                         epsilonDecay=epsilonDecay,
                                                          maxMemory=maxMemory,
                                                          hiddenSize=hiddenSize,
-                                                         batchSize=batchSize)
+                                                         batchSize=batchSize,
+                                                         temporalDiscount=temporalDiscount)
 
         rewardAlg  = ml_simulation_driver.MLProgressRewardAlgorithm()
 
@@ -73,9 +77,9 @@ if __name__ == "__main__":
 
     controller = ml_controller.TurtlebotMLController()
 
-    learningFunction = learn(10, 10, 1, 1000, controller)
-    initialGuesses = (0.1, 100, 50)
-    bounds = ((0.0001, 0.8), (1, 500), (1, 200))
+    learningFunction = learn(500, 50, 1, 10000, controller)
+    initialGuesses = (0.9, 10, 50, 0.5, 0.9)
+    bounds = ((0.0001, 0.8), (1, 500), (1, 200), (0, 1), (0, 1))
     options = {"disp" : True}
     # Powell for noisy measurements.
     # See http://www.scipy-lectures.org/advanced/mathematical_optimization/#practical-guide-to-optimization-with-scipy

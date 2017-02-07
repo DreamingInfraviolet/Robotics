@@ -32,7 +32,7 @@ class LaserInput(RosInput):
         super(LaserInput, self).__init__(topic, LaserScan, timeout)
 
     def _update(self, msg):
-        self.values = [(1000 if x == float("Inf") else x) for x in list(msg.ranges)]
+        self.values = [(min(x, 1000)/1000.0) for x in list(msg.ranges)]
 
 class VectorInput(RosInput):
     def __init__(self, topic, timeout=None):
