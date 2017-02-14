@@ -8,17 +8,25 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Vector3
 
 class RosInput(object):
-    def __init__(self, topic, msgtype, timeout=None):
+    def __init__(self, topic, msgtype, timeout=None, normalisation=None):
         self.sub = rospy.Subscriber(topic, msgtype, self._update)
         self.topic = topic
         self.msgtype = msgtype
         self.values = [msgtype()]
         self.timeout = timeout
+        self.normalisation=normalisation
 
     def _update(self, msg):
         '''Callback to update value'''
         self.values = [msg.data]
+        if self.normalisation != None:
+            self._normalise()
 
+    def _normalise(self):
+        self.values = [min(x, self.normalisation) for x in self.values]
+        self.values = [max(x, -self.normalisation) for x in self.values]
+        self.values = [x/float(self.normalisation) for x in self.values]
+        
     def fetchValues(self):
         '''Wait for a compass message, and return its value'''
         try:
@@ -28,19 +36,23 @@ class RosInput(object):
         return self.values
 
 class LaserInput(RosInput):
-    def __init__(self, topic, timeout=None):
-        super(LaserInput, self).__init__(topic, LaserScan, timeout)
+    def __init__(self, topic, timeout=None, normalisation=None):
+        super(LaserInput, self).__init__(topic, LaserScan, timeout, normalisation)
 
     def _update(self, msg):
-        self.values = [(min(x, 1000)/1000.0) for x in list(msg.ranges)]
+        self.values = [(1000 if x == float("Inf") else x) for x in list(msg.ranges)]
+        if self.normalisation:
+            self._normalise()
 
 class VectorInput(RosInput):
-    def __init__(self, topic, timeout=None):
-        super(VectorInput, self).__init__(topic, Vector3, timeout)
+    def __init__(self, topic, timeout=None, normalisation=None):
+        super(VectorInput, self).__init__(topic, Vector3, timeout, normalisation)
 
     def _update(self, msg):
         self.values = [msg.x, msg.y, msg.z]
-
+        if self.normalisation:
+            self._normalise()
+            
 class MLController(object):
     def __init__(self):
         self.fitness = 0
@@ -59,8 +71,9 @@ class MLController(object):
     def getActionCount(self):
         return len(self.actions)
 
-    def performAction(self, n):
-        self.actions[n](self)
+    def performActions(self, n):
+        for i in range(len(n)):
+            self.actions[i](self, n[i])
 
     def getInputCount(self):
         return self.inputCount
@@ -96,12 +109,12 @@ class TurtlebotMLController(MLController):
         self.turnPub    = rospy.Publisher("/front_caster_controller/command", Float64, queue_size=10)
         self.resetPub   = rospy.Publisher("/reset_position", Bool, queue_size=10)
 
-        self.gpsInput = VectorInput("/gps")
+        self.gpsInput = VectorInput("/gps", normalisation=1000.0)
 
         self.inputs = [
-            RosInput("compass", Float64),
-            RosInput("/front_caster_controller/command", Float64, 0.05),
-            LaserInput("/laser_scan"),
+            RosInput("compass", Float64, normalisation=(math.pi*2)),
+            RosInput("/front_caster_controller/command", Float64, 0.05, normalisation=(math.pi*2)),
+            LaserInput("/laser_scan", normalisation=1000.0),
             self.gpsInput,
         ]
 
@@ -109,13 +122,13 @@ class TurtlebotMLController(MLController):
 
         self.actions = [
             # Move forward
-            lambda instance: instance._move(instance.vars.movementVelocity),
+            lambda instance, n: instance._move(n),
             # Move backward
-            lambda instance: instance._move(-instance.vars.movementVelocity),
+            lambda instance, n: instance._move(-n),
             # Turn right
-            lambda instance: instance._turn(instance.vars.turnDelta),
+            lambda instance, n: instance._turn(n),
             # Turn left
-            lambda instance: instance._turn(-instance.vars.turnDelta),
+            lambda instance, n: instance._turn(-n),
         ]
 
     def reset(self):

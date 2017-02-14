@@ -45,13 +45,16 @@ class MLSimulationDriver(object):
         self.decisionSimTimeRateHz = decisionSimTimeRateHz
         self.rewardAlgorithm = rewardAlgorithm
 
-    def learn(self):
-        self.algorithm.startLearning(self.controller.getInputCount(), self.controller.getActionCount())
+    def learn(self, skipStartLearningCall = False):
+        
+        if not skipStartLearningCall:
+            self.algorithm.startLearning(self.controller.getInputCount(), self.controller.getActionCount())
 
         totalLearningReward = 0
 
         for iEpoch in range(self.epochs):
             totalEpochReward = 0
+            totalEpochLearningLoss = 0
             startTime = int(round(time.time() * 1000))
             decisionRate = rospy.Rate(self.decisionSimTimeRateHz)
             self.controller.reset()
@@ -63,9 +66,9 @@ class MLSimulationDriver(object):
             
             for iDecision in range(self.decisionsPerEpoch):
                 # Decide on next move using algorithm
-                decision = self.algorithm.decideOnAction(self.controller.fetchInputs())
+                decisions = self.algorithm.decideOnAction(self.controller.fetchInputs())
                 # Act out decision
-                self.controller.performAction(decision)
+                self.controller.performActions(decisions)
 
                 # Give the decision some time to have effect
                 # NOTE: Bottleneck. A lot of time is spent sleeping and not doing anything
@@ -80,7 +83,8 @@ class MLSimulationDriver(object):
                 newInputs = self.controller.fetchInputs()
                 # React to its effect
                 isFinalDecision = (iEpoch == self.epochs - 1 and iDecision == self.decisionsPerEpoch - 1)
-                self.algorithm.reactToDecision(reward, newInputs, isFinalDecision)
+                loss = self.algorithm.reactToDecision(reward, newInputs, isFinalDecision)
+                totalEpochLearningLoss = totalEpochLearningLoss + loss
 
             self.algorithm.endEpoch()
             # \\\
@@ -89,7 +93,8 @@ class MLSimulationDriver(object):
 
             elapsedTime = int(round(time.time() * 1000)) - startTime
             print("epoch " + str(iEpoch) + "/" + str(self.epochs) + " | "
-                 +"avg. reward: " + str(totalEpochReward) + " (" + str(self.decisionsPerEpoch) + " max) | " + str(elapsedTime) + "ms")
+                 +"avg. reward: " + str(totalEpochReward) + " (" + str(self.decisionsPerEpoch) + " max) | " + str(elapsedTime) + "ms"
+            +" | avg. loss: " + str(totalEpochLearningLoss / self.decisionsPerEpoch))
 
         return float(totalLearningReward) / (self.epochs * self.decisionsPerEpoch)
 
