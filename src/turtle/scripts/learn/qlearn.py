@@ -136,6 +136,7 @@ def learn(epochs, decisionsPerEpoch, decisionSimTimeRateHz, maxMemory, controlle
         algorithm  = ml_algorithm.PolicyGradient(sess)
 
         rewardAlg  = ml_simulation_driver.MLProgressRewardAlgorithm()
+        # rewardAlg  = ml_simulation_driver.MLDirectFitnessRewardAlgorithm()
 
         driver     = ml_simulation_driver.MLSimulationDriver(controller,
                                                              algorithm,

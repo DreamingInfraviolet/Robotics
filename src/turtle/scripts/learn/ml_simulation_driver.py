@@ -4,19 +4,19 @@ import rospy
 class MLProgressRewardAlgorithm(object):
     ''' This class must be updated continuously with the robot's fitness, and returns an appropriate reward when asked.
         The reason we need this is that we may want to award +1 when progress was made, or -1 when fitness worsened. '''
-    def __init__(self, improvementRewardThreshold=1.01):
+    def __init__(self, improvementRewardThreshold=1.025):
         self.startingFitness = 0
         self.bestFitness = 0
         self.lastFitness = 0
         self.currentReward = 0
         self.improvementRewardThreshold = improvementRewardThreshold
+        self.startAlreadyInitialised = False
 
     def updateFitness(self, score):
-        
         if score > self.bestFitness * self.improvementRewardThreshold:
             self.currentReward = 1
             self.bestFitness = score
-        elif score < self.startingFitness * (2-self.improvementRewardThreshold):
+        elif score < self.startingFitness:
             self.currentReward = -1
         else:
             self.currentReward = 0
@@ -27,10 +27,28 @@ class MLProgressRewardAlgorithm(object):
         return self.currentReward
 
     def resetForEpoch(self, startingFitness):
-        self.startingFitness = startingFitness
+        if not self.startAlreadyInitialised:
+            self.startingFitness = startingFitness
+            self.startAlreadyInitialised = True
         self.bestFitness = self.startingFitness
         self.lastFitness = self.startingFitness
         self.currentReward = 0
+
+class MLDirectFitnessRewardAlgorithm(object):
+    ''' This class must be updated continuously with the robot's fitness, and returns an appropriate reward when asked.
+        The reason we need this is that we may want to award +1 when progress was made, or -1 when fitness worsened. '''
+    def __init__(self):
+        self.fitness = 0
+
+    def updateFitness(self, score):
+        self.fitness = score
+
+    def getRewardValue(self):
+        return self.fitness
+
+    def resetForEpoch(self, startingFitness):
+        self.fitness = 0
+
 
 class MLSimulationDriver(object):
     ''' This class is meant to abstract away the ros-specific code needed to train an algorithm.
@@ -51,8 +69,14 @@ class MLSimulationDriver(object):
             self.algorithm.startLearning(self.controller.getInputCount(), self.controller.getActionCount())
 
         totalLearningReward = 0
-
+        q = 0
         for iEpoch in range(self.epochs):
+
+            if q == 5:
+                while True:
+                    pass
+            q = q + 1
+
             totalEpochReward = 0
             totalEpochLearningLoss = 0
             startTime = int(round(time.time() * 1000))

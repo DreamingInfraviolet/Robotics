@@ -113,7 +113,7 @@ class TurtlebotMLController(MLController):
 
         self.inputs = [
             RosInput("compass", Float64, normalisation=(math.pi*2)),
-            RosInput("/front_caster_controller/command", Float64, 0.05, normalisation=(math.pi*2)),
+            # RosInput("/front_caster_controller/command", Float64, 0.05, normalisation=(math.pi*2)),
             LaserInput("/laser_scan", normalisation=1000.0),
             self.gpsInput,
         ]
@@ -122,13 +122,13 @@ class TurtlebotMLController(MLController):
 
         self.actions = [
             # Move forward
-            lambda instance, n: instance._move(n),
+            lambda instance, n: instance._move(n* instance.vars.movementVelocity),
             # Move backward
-            lambda instance, n: instance._move(-n),
+            # lambda instance, n: instance._move(-n* instance.vars.movementVelocity),
             # Turn right
             lambda instance, n: instance._turn(n),
             # Turn left
-            lambda instance, n: instance._turn(-n),
+            # lambda instance, n: instance._turn(-n),
         ]
 
     def reset(self):
@@ -169,10 +169,7 @@ class TurtlebotMLController(MLController):
     def _turn(self, angle):
         '''Set the robot's caster wheel angle'''
         #print("Turning by " + str(angle))
-        newOrientation = self.vars.currentWheelOrientation + angle
-        if abs(newOrientation) > 1:
-            newOrientation = self.vars.currentWheelOrientation
-        self.vars.currentWheelOrientation = newOrientation
+        self.vars.currentWheelOrientation = angle
         self.turnPub.publish(self.vars.currentWheelOrientation)
 
     def _move(self, amount):

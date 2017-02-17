@@ -22,26 +22,30 @@ northVector = numpy.array([1, 0, 0])
 
 def getCompassValue(robotVector, northVector):
     # If pointing straight up or down, make down vector equal new forward vector
-        if robotVector[0] == 0 and robotVector[1] == 0:
-            robotVector[0], robotVector[1], robotVector[2] = -robotVector[2], -robotVector[1], robotVector[0]
+    if robotVector[0] == 0 and robotVector[1] == 0:
+        robotVector[0], robotVector[1], robotVector[2] = -robotVector[2], -robotVector[1], robotVector[0]
 
-        # Set z = 0
-        robotVector[2] = 0
+    # Set z = 0
+    robotVector[2] = 0
 
-        # Get 2D angle difference
-        signedAngle = math.atan2(robotVector[1], robotVector[0]) - math.atan2(northVector[1], northVector[0])
+    # Get 2D angle difference
+    signedAngle = math.atan2(robotVector[1], robotVector[0]) - math.atan2(northVector[1], northVector[0])
 
-        return signedAngle
+    return signedAngle
 
 def positionUpdateCallback(msg):
     if "turtle" in msg.name:
         orientation = msg.pose[msg.name.index("turtle")].orientation
+        # 
         robotVector = qv_mult(orientation, (1, 0, 0))
-
-        compassPub.publish(getCompassValue(robotVector, northVector))
-        
+        # print("Robot vect " + str(robotVector))
+        # print("North vect " + str(northVector))
+        compassValue = getCompassValue(robotVector, northVector)
+        # print("Compass    " + str(compassValue))
+        compassPub.publish(compassValue)
+    
 positionSub = rospy.Subscriber("/gazebo/model_states", ModelStates, positionUpdateCallback)
-compassPub  = rospy.Publisher("compass", Float64, queue_size=10)
-rospy.init_node('fitness_evaluator')
+compassPub  = rospy.Publisher("compass", Float64, queue_size=0)
+rospy.init_node('compass')
 
 rospy.spin()

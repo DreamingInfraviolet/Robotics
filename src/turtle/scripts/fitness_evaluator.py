@@ -4,7 +4,7 @@ import rospy
 from gazebo_msgs.msg import ModelStates
 from std_msgs.msg import Float64
 
-targetPosition = (10, 0, 0)
+targetPosition = (5, 0, 0)
 gI = 0
 
 def positionUpdateCallback(msg):
@@ -18,7 +18,7 @@ def positionUpdateCallback(msg):
         gI = gI + 1
 
 positionSub = rospy.Subscriber("/gazebo/model_states", ModelStates, positionUpdateCallback)
-fitnessPub  = rospy.Publisher("fitness_evaluator", Float64, queue_size=10)
+fitnessPub  = rospy.Publisher("fitness_evaluator", Float64, )
 rospy.init_node('fitness_evaluator')
 
 rospy.spin()

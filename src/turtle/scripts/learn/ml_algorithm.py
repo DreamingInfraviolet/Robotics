@@ -273,10 +273,10 @@ class ActorNetwork(object):
         h0 = Dense(HIDDEN1_UNITS, activation='relu')(S)
         h1 = Dense(HIDDEN2_UNITS, activation='relu')(h0)
         Steering = Dense(1,activation='tanh',init=lambda shape, name: normal(shape, scale=1e-4))(h1)  
-        Acceleration = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4))(h1)   
-        Brake = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4))(h1) 
-        Stuff = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4))(h1) 
-        V = merge([Steering,Acceleration,Brake, Stuff],mode='concat')          
+        Acceleration = Dense(1,activation='tanh',init=lambda shape, name: normal(shape, scale=1e-4))(h1)   
+        # Brake = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4))(h1) 
+        # Stuff = Dense(1,activation='sigmoid',init=lambda shape, name: normal(shape, scale=1e-4))(h1) 
+        V = merge([Steering,Acceleration],mode='concat')          
         model = Model(input=S,output=V)
         return model, model.trainable_weights, S
 
@@ -432,23 +432,23 @@ class PolicyGradient(MLAlgorithm):
             self.epochData.s_t = np.hstack(currentInputs)
             self.learningData.firstRun = False
 
-
-        loss = 0
         self.learningData.epsilon -= 1.0 / self.EXPLORE
         a_t = np.zeros([1,self.learningData.action_dim])
         noise_t = np.zeros([1,self.learningData.action_dim])
 
         a_t_original = self.learningData.actor.model.predict(self.epochData.s_t.reshape(1, self.epochData.s_t.shape[0]))
         noise_t[0][0] = self.train_indicator * max(self.learningData.epsilon, 0) * self.OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
-        noise_t[0][1] = self.train_indicator * max(self.learningData.epsilon, 0) * self.OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
-        noise_t[0][2] = self.train_indicator * max(self.learningData.epsilon, 0) * self.OU.function(a_t_original[0][2], -0.1 , 1.00, 0.05)
+        # noise_t[0][1] = self.train_indicator * max(self.learningData.epsilon, 0) * self.OU.function(a_t_original[0][1],  0.5 , 1.00, 0.10)
+        noise_t[0][1] = self.train_indicator * max(self.learningData.epsilon, 0) * self.OU.function(a_t_original[0][0],  0.0 , 0.60, 0.30)
+        # noise_t[0][2] = self.train_indicator * max(self.learningData.epsilon, 0) * self.OU.function(a_t_original[0][2], -0.1 , 1.00, 0.05)
 
         a_t[0][0] = a_t_original[0][0] + noise_t[0][0]
         a_t[0][1] = a_t_original[0][1] + noise_t[0][1]
-        a_t[0][2] = a_t_original[0][2] + noise_t[0][2]
+        # a_t[0][2] = a_t_original[0][2] + noise_t[0][2]
 
         self.epochData.a_t = a_t
 
+        # print("Decided " + str(a_t[0]))
         return a_t[0]
 
     def reactToDecision(self, reward, newInputs, finalDecision):

@@ -12,7 +12,7 @@ initialState = None
 
 def resetPositionCallback(msg):
     if msg and initialState:
-        #print("Resetting model state")
+        print("Resetting to initial state: " + str(initialState))
         positionPub.publish(initialState)
 
 def getInitialState():
@@ -53,5 +53,5 @@ if not getInitialState():
 
 rospy.init_node('reset_position')
 resetSub     = rospy.Subscriber("reset_position", Bool, resetPositionCallback)
-positionPub  = rospy.Publisher("/gazebo/set_model_state", ModelState, queue_size=1)
+positionPub  = rospy.Publisher("/gazebo/set_model_state", ModelState, queue_size=0)
 rospy.spin()
