@@ -48,7 +48,9 @@ class ExperienceReplay(object):
             Q_of_next_state = model.predict(state_tp1)[0]
 
             # action q value = reward + discount * max Q of resulting state
-            targets[iBatchElement, action_t] = reward_t + self.discount * np.max(Q_of_next_state)
+            # targets[iBatchElement, action_t] = reward_t + self.discount * np.max(Q_of_next_state)
+            targets[iBatchElement, action_t] = targets[iBatchElement][action_t] \
+                + 0.1 * (reward_t + self.discount * np.max(Q_of_next_state) - targets[iBatchElement][action_t])
         return inputs, targets
 
 
@@ -122,87 +124,88 @@ class ExperienceReplay(object):
 #         pass
 
 
-# class RealQlearningAlgorithm(MLAlgorithm):
+class RealQlearningAlgorithm(MLAlgorithm):
 
-#     class LearningData(object):
-#         def __init__(self):
-#             self.model = None
-#             self.experienceReplay = None
-#             self.actionCount = 0
-#             self.epochIndex = 0
+    class LearningData(object):
+        def __init__(self):
+            self.model = None
+            self.experienceReplay = None
+            self.actionCount = 0
+            self.epochIndex = 0
 
-#     class EpochData(object):
-#         def __init__(self):
-#             self.winCount = 0
-#             self.initialInputs = None
-#             self.actionTaken = -1
+    class EpochData(object):
+        def __init__(self):
+            self.winCount = 0
+            self.initialInputs = None
+            self.actionTaken = -1
 
-#     def __init__(self, explorationEpsilon, epsilonDecay, maxMemory, hiddenSize, batchSize, temporalDiscount):
-#         self.epsilon    = explorationEpsilon
-#         self.epsilonDecay = epsilonDecay
-#         self.maxMemory  = maxMemory
-#         self.hiddenSize = hiddenSize
-#         self.batchSize  = batchSize
-#         self.temporalDiscount = temporalDiscount
+    def __init__(self, explorationEpsilon, epsilonDecay, maxMemory, hiddenSize, batchSize, temporalDiscount):
+        self.epsilon    = explorationEpsilon
+        self.epsilonDecay = epsilonDecay
+        self.maxMemory  = maxMemory
+        self.hiddenSize = hiddenSize
+        self.batchSize  = batchSize
+        self.temporalDiscount = temporalDiscount
 
-#         self.epochData = None
-#         self.learningData = None
+        self.epochData = None
+        self.learningData = None
 
-#     def startLearning(self, inputCount, actionCount):
-#         self.learningData = self.LearningData()
+    def startLearning(self, inputCount, actionCount):
+        self.learningData = self.LearningData()
 
-#         self.learningData.actionCount = actionCount
-#         print(inputCount)
-#         self.learningData.model = Sequential()
-#         self.learningData.model.add(Dense(self.hiddenSize, input_shape=(inputCount,), activation='relu'))
-#         self.learningData.model.add(Dense(self.hiddenSize, activation='relu'))
-#         self.learningData.model.add(Dense(self.learningData.actionCount))
-#         self.learningData.model.compile(keras.optimizers.Adamax(), "mse")
+        self.learningData.actionCount = 8
+        print(inputCount)
+        self.learningData.model = Sequential()
+        self.learningData.model.add(Dense(self.hiddenSize, input_shape=(inputCount,), activation='relu'))
+        self.learningData.model.add(Dense(self.hiddenSize, activation='relu'))
+        self.learningData.model.add(Dense(self.learningData.actionCount))
+        self.learningData.model.compile(keras.optimizers.Adamax(), "mse")
 
-#         self.learningData.experienceReplay = ExperienceReplay(max_memory=self.maxMemory, discount=self.temporalDiscount)
+        self.learningData.experienceReplay = ExperienceReplay(max_memory=self.maxMemory, discount=self.temporalDiscount)
 
-#         # If you want to continue training from a previous model, just uncomment the line bellow
-#         # model.load_weights("model.h5")
+        # If you want to continue training from a previous model, just uncomment the line bellow
+        # model.load_weights("model.h5")
 
-#     def startEpoch(self):
-#         self.epochData = self.EpochData()
-#         print("Training with epsilon = " + str(self.getCurrentExplorationEpsilon()))
+    def startEpoch(self):
+        self.epochData = self.EpochData()
+        print("Training with epsilon = " + str(self.getCurrentExplorationEpsilon()))
 
-#     def decideOnAction(self, currentInputs):
-#         currentInputs = np.array(currentInputs).reshape((1, -1))
+    def decideOnAction(self, currentInputs):
+        currentInputs = np.array(currentInputs).reshape((1, -1))
 
-#         # get next action
+        # get next action
         
-#         if np.random.rand() <= self.getCurrentExplorationEpsilon():
-#             # Perform random action, explore!
-#             action = np.random.randint(0, self.learningData.actionCount, size=1)
-#         else:
-#             # Predict best action to take
-#             q = self.QForAllActions(currentInputs)
-#             action = np.argmax(q[0])
+        if np.random.rand() <= self.getCurrentExplorationEpsilon():
+            # Perform random action, explore!
+            action = np.random.randint(0, self.learningData.actionCount, size=1)
+        else:
+            # Predict best action to take
+            q = self.QForAllActions(currentInputs)
+            action = np.argmax(q[0])
             
-#             print(q)
-#             print("---")
+            print(q)
+            print("---")
 
-#         self.epochData.initialInputs = currentInputs
-#         self.epochData.actionTaken = action
+        self.epochData.initialInputs = currentInputs
+        self.epochData.actionTaken = action
 
-#         return action
+        print("Decided: " + str(action))
+        return action
 
-#     def QForAllActions(self, inputs):
-#         return self.learningData.model.predict(inputs)
+    def QForAllActions(self, inputs):
+        return self.learningData.model.predict(inputs)
 
-#     def getCurrentExplorationEpsilon(self):
-#         return self.epsilon ** (self.learningData.epochIndex * self.epsilonDecay)
+    def getCurrentExplorationEpsilon(self):
+        return self.epsilon ** (self.learningData.epochIndex * self.epsilonDecay)
 
-#     def reactToDecision(self, reward, newInputs, finalDecision):
-#         self.learningData.experienceReplay.remember([self.epochData.initialInputs, self.epochData.actionTaken, reward, np.array(newInputs).reshape((1, -1))])
-#         inputs, targets = self.learningData.experienceReplay.get_batch(self.learningData.model, batch_size=self.batchSize)
-#         # loss = self.learningData.model.train_on_batch(inputs, targets)
-#         return 0 #loss
+    def reactToDecision(self, reward, newInputs, finalDecision):
+        self.learningData.experienceReplay.remember([self.epochData.initialInputs, self.epochData.actionTaken, reward, np.array(newInputs).reshape((1, -1))])
+        inputs, targets = self.learningData.experienceReplay.get_batch(self.learningData.model, batch_size=self.batchSize)
+        loss = self.learningData.model.train_on_batch(inputs, targets)
+        return loss
 
-#     def endEpoch(self):
-#         self.learningData.epochIndex = self.learningData.epochIndex + 1
+    def endEpoch(self):
+        self.learningData.epochIndex = self.learningData.epochIndex + 1
 
 
 
@@ -251,7 +254,7 @@ class ActorNetwork(object):
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
         self.params_grad = tf.gradients(self.model.output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
-        self.optimize = tf.train.AdamOptimizer(LEARNING_RATE).apply_gradients(grads)
+        self.optimize = tf.train.AdamOptimizer(self.LEARNING_RATE).apply_gradients(grads)
         self.sess.run(tf.initialize_all_variables())
 
     def train(self, states, action_grads):
@@ -259,7 +262,7 @@ class ActorNetwork(object):
             self.state: states,
             self.action_gradient: action_grads
         })
-
+        
     def target_train(self):
         actor_weights = self.model.get_weights()
         actor_target_weights = self.target_model.get_weights()
@@ -394,15 +397,15 @@ class PolicyGradient(MLAlgorithm):
             self.totalReward = 0
             self.a_t = None
 
-    def __init__(self, sess):
+    def __init__(self, sess, GAMMA=0.99, TAU=0.001, LRA=0.0001, LRC=0.001, EXPLORE=100000.0):
         self.OU = OU()       #Ornstein-Uhlenbeck Process
         self.BUFFER_SIZE = 100000
         self.BATCH_SIZE = 32
-        self.GAMMA = 0.99
-        self.TAU = 0.001     #Target Network HyperParameters
-        self.LRA = 0.0001    #Learning rate for Actor
-        self.LRC = 0.001     #Lerning rate for Critic
-        self.EXPLORE = 100000.
+        self.GAMMA = GAMMA
+        self.TAU = TAU    #Target Network HyperParameters
+        self.LRA = LRA    #Learning rate for Actor
+        self.LRC = LRC     #Lerning rate for Critic
+        self.EXPLORE = EXPLORE
 
         self.learningData = None
         self.epochData = None
@@ -448,7 +451,8 @@ class PolicyGradient(MLAlgorithm):
 
         self.epochData.a_t = a_t
 
-        # print("Decided " + str(a_t[0]))
+        # print("decided " + str(a_t_original[0][0]) + " + " + str(noise_t[0][0]) + " = " + str(a_t[0]))
+        print("Decided " + str(a_t[0]))
         return a_t[0]
 
     def reactToDecision(self, reward, newInputs, finalDecision):

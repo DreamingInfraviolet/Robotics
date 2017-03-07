@@ -4,7 +4,7 @@ import rospy
 class MLProgressRewardAlgorithm(object):
     ''' This class must be updated continuously with the robot's fitness, and returns an appropriate reward when asked.
         The reason we need this is that we may want to award +1 when progress was made, or -1 when fitness worsened. '''
-    def __init__(self, improvementRewardThreshold=1.025):
+    def __init__(self, improvementRewardThreshold=1.018):
         self.startingFitness = 0
         self.bestFitness = 0
         self.lastFitness = 0
@@ -69,13 +69,7 @@ class MLSimulationDriver(object):
             self.algorithm.startLearning(self.controller.getInputCount(), self.controller.getActionCount())
 
         totalLearningReward = 0
-        q = 0
         for iEpoch in range(self.epochs):
-
-            if q == 5:
-                while True:
-                    pass
-            q = q + 1
 
             totalEpochReward = 0
             totalEpochLearningLoss = 0

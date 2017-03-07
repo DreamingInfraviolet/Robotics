@@ -7,7 +7,8 @@
     <include>
       <uri>model://sun</uri>
     </include>
-    <model name="rock">
+
+    <model name="pillar0">
       <pose>2 0 0 0 0 0</pose>
       <static>true</static>
       <link name="body">
@@ -17,7 +18,7 @@
               <uri>model://rock/mesh/Rock1.dae</uri>
             </mesh>-->
             <cylinder>
-              <radius>1</radius>
+              <radius>0.5</radius>
               <length>5</length>
             </cylinder>
           </geometry>
@@ -28,7 +29,7 @@
               <uri>model://rock/mesh/Rock1.dae</uri>
             </mesh>-->
             <cylinder>
-              <radius>1</radius>
+              <radius>0.5</radius>
               <length>5</length>
             </cylinder>
           </geometry>
@@ -42,6 +43,9 @@
         </visual>
       </link>
     </model>
+
+
+
     <physics type="bullet">
       <real_time_update_rate>0.000000</real_time_update_rate>
       <max_step_size>0.001000</max_step_size>

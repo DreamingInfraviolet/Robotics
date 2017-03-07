@@ -33,10 +33,12 @@ def getCompassValue(robotVector, northVector):
 
     return signedAngle
 
+
+
 def positionUpdateCallback(msg):
     if "turtle" in msg.name:
         orientation = msg.pose[msg.name.index("turtle")].orientation
-        # 
+        # print("Orientation " + str(orientation))
         robotVector = qv_mult(orientation, (1, 0, 0))
         # print("Robot vect " + str(robotVector))
         # print("North vect " + str(northVector))

@@ -133,7 +133,8 @@ def learn(epochs, decisionsPerEpoch, decisionSimTimeRateHz, maxMemory, controlle
         # Populate algorithms
 
         global sess
-        algorithm  = ml_algorithm.PolicyGradient(sess)
+        # algorithm  = ml_algorithm.PolicyGradient(sess)
+        algorithm = ml_algorithm.RealQlearningAlgorithm(explorationEpsilon, epsilonDecay, maxMemory, hiddenSize, batchSize, temporalDiscount)
 
         rewardAlg  = ml_simulation_driver.MLProgressRewardAlgorithm()
         # rewardAlg  = ml_simulation_driver.MLDirectFitnessRewardAlgorithm()
@@ -178,8 +179,8 @@ if __name__ == "__main__":
 
     controller = ml_controller.TurtlebotMLController()
 
-    learningFunction = learn(500, 50, 1, 25000, controller)
-    initialGuesses = (0.8, 128, 100, 0.5, 0.9)
+    learningFunction = learn(500, 35, 1, 500, controller)
+    initialGuesses = (0.8, 128, 100, 0.1, 0.8)
     bounds = ((0.0001, 0.8), (1, 500), (1, 200), (0, 1), (0, 1))
     options = {"disp" : True}
     # Powell for noisy measurements.
